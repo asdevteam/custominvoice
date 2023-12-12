@@ -1,0 +1,41 @@
+version: '3'
+services:
+  drupal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "6011:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      PHP_OPTIONS: "-d memory_limit=-1"
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:latest  # Specify the exact MySQL version you want to use
+    environment:
+      MYSQL_ROOT_PASSWORD: admin@123
+      MYSQL_DATABASE: paypal_db
+    ports:
+      - "6012:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+
+  phpmyadmin:
+    image: phpmyadmin:latest  # Specify the exact phpMyAdmin version you want to use
+    links:
+      - mysql:db
+    ports:
+      - "6013:80"
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: admin@123
+
+volumes:
+  db-data:

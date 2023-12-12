@@ -1,0 +1,134 @@
+{#
+/**
+ * @file
+ * Template for the invoice.
+ *
+ * Available variables:
+ * - invoice_entity: The invoice entity.
+ * - billing_information: The billing information.
+ * - totals: An array of invoice totals values with the following keys:
+ *   - subtotal: The invoice subtotal price.
+ *   - adjustments: An array of adjustment totals:
+ *     - type: The adjustment type.
+ *     - label: The adjustment label.
+ *     - total: The adjustment total price.
+ *     - weight: The adjustment weight, taken from the adjustment type.
+ *   - total: The invoice total price.
+ *
+ * @ingroup themeable
+ */
+#}
+{% set due_date = invoice_entity.getDueDateTime %}
+{% if (logo_url) %}
+  <img src="{{ logo_url }}"/>
+{% endif %}
+<div class="invoice-header">
+  <table class="table-container fullwidth">
+    <tr>
+      <td>
+        {% if (invoice.billing_information) %}
+          <div class="billing-information">
+            <h3>{{ 'Billed to'|t }}</h3>
+            {{ invoice.billing_information }}
+          </div>
+        {% endif %}
+      </td>
+      <td>
+        <table class="invoice-table">
+          <tbody>
+          <tr>
+            <td>{{ 'Invoice'|t }}</td>
+            <td>{{ invoice_entity.getInvoiceNumber }}</td>
+          </tr>
+          <tr>
+            <td>{{ 'Date'|t }}</td>
+            <td>{{ invoice_entity.getInvoiceDateTime|format_date('html_date') }}</td>
+          </tr>
+          {% if (due_date) %}
+            <tr>
+              <td>{{ 'Due date'|t }}</td>
+              <td>{{ due_date|format_date('html_date') }}</td>
+            </tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+<div class="invoice-items-container">
+  <table class="invoice-items">
+    <thead>
+    <tr>
+      <th>{{ 'Description'|t }}</th>
+      <th>{{ 'Unit price'|t }}</th>
+      <th>{{ 'Quantity'|t }}</th>
+      <th>{{ 'Total'|t }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% block invoice_items %}
+      {% for invoice_item in invoice_entity.getItems %}
+        <tr>
+          <td>{{ invoice_item.label }} {{ invoice_item.getDescription }}</td>
+          <td>{{ invoice_item.getUnitPrice|commerce_price_format }}</td>
+          <td>
+            {{ invoice_item.getQuantity|number_format }}
+          </td>
+          <td>
+            {{ invoice_item.getTotalPrice|commerce_price_format }}
+          </td>
+        </tr>
+      {% endfor %}
+    {% endblock %}
+    </tbody>
+  </table>
+</div>
+<div class="invoice-totals-container">
+  <table class="table-container fullwidth">
+    <tr>
+      <td>
+        <table class="invoice-table">
+          <tbody>
+          <tr>
+            <td>
+              {{ 'Subtotal'|t }}
+            </td>
+            <td>
+              {{ totals.subtotal|commerce_price_format }}
+            </td>
+          </tr>
+          {% for adjustment in totals.adjustments %}
+            <tr>
+              <td>
+                {{ adjustment.label }}
+              </td>
+              <td>
+                {{ adjustment.total|commerce_price_format }}
+              </td>
+            </tr>
+          {% endfor %}
+          <tr class="invoice-total">
+            <td>
+              {{ 'Invoice Total'|t }}
+            </td>
+            <td>
+              {{ invoice_entity.getTotalPrice|commerce_price_format }}
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+{% if (payment_terms) %}
+  <div class="invoice-payment-terms">
+    {{ payment_terms }}
+  </div>
+{% endif %}
+{% if (footer_text) %}
+  <div class="invoice-footer">
+    {{ footer_text }}
+  </div>
+{% endif %}

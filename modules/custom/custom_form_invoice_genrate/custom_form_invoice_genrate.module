@@ -1,0 +1,63 @@
+<?php 
+
+// use Drupal\commerce_order\Entity\OrderInterface;
+// use Drupal\commerce_order\Entity\OrderItemInterface;
+// use Drupal\commerce_order\Entity\OrderItem;
+// use Drupal\commerce_order\Entity\Order;
+// use Drupal\commerce_price\Price;
+// use Drupal\commerce_product\Entity\ProductVariation;
+// use Drupal\commerce_checkout\Entity\Checkout;
+// use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+// use Symfony\Component\DependencyInjection\ContainerInterface;
+// use Symfony\Component\HttpFoundation\RedirectResponse;
+// use Drupal\Core\Url;
+// use ReflectionObject;
+// use Drupal\Core\Datetime\DrupalDateTime;
+// use ApplicationSubmited;
+
+// // yourmodule.module
+// function custom_form_invoice_genrate_order_item($customer_name) {
+
+//     // Create a new order item.
+//   $order_item = commerce_order_item_create('custom');
+//   $order_item->setTitle($item_label);
+//   $order_item->setUnitPrice($item_price);
+
+//   // Add the order item to the cart.
+//   commerce_cart_order_item_add($order_item);
+  
+//   // Create a new order.
+//   // Get the CartProvider service.
+//   $cartProvider = \Drupal::service('commerce_cart.cart_provider');
+//     //  kint($cartProvider) ;
+//   // Get or create the cart.
+//   $cart = $cartProvider->getCart('default');
+//   if (!$cart) {
+//     $cart = $cartProvider->createCart('default');
+//   }
+//   // kint($cart);
+//   // Check if the cart is not empty.
+//   if ($cart && count($cart->getItems()) > 0) {
+    
+//     // Remove all items from the cart.
+//     $orderItemStorage = \Drupal::service('entity_type.manager')->getStorage('commerce_order_item');
+//     $orderItemStorage->delete($cart->getItems());
+
+//     // Save the updated cart.
+//     // $cart->save();
+//   }
+// //   $order = commerce_order_new();
+// //   $order->uid = 1; // Set the user ID for the order.
+
+// //   // Save the order.
+// //   commerce_order_save($order);
+
+//   // Add line items based on form data.
+//   $line_item = commerce_line_item_new('product', $order->order_id);
+//   $line_item->line_item_label = t('Product');
+//   $line_item->quantity = 1;
+//   $line_item->commerce_unit_price['und'][0]['amount'] = 10.00;
+//   commerce_line_item_save($line_item);
+
+//   // Customize this process based on your specific needs.
+// }

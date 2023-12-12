@@ -1,0 +1,7 @@
+custom_form_invoice_genrate.form:
+  path: '/invoice-generation'
+  defaults:
+    _form: '\Drupal\custom_form_invoice_genrate\Form\CustomForminvoice'
+    _title: 'Invoice Generation Form'
+  requirements:
+    _permission: 'administrator'  # Adjust the permission as needed.

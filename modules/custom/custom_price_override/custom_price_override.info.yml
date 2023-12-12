@@ -1,0 +1,7 @@
+name: 'Custom Price Override'
+type: module
+description: 'Custom module to override Commerce Choose Price form labels.'
+core_version_requirement: ^8 || ^9
+package: Custom
+dependencies:
+  - commerce_price:commerce_price

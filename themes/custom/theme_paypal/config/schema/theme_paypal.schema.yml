@@ -1,0 +1,5 @@
+# Schema for the configuration files of the Bootstrap Barrio Subtheme.
+
+theme_paypal.settings:
+  type: theme_paypal_settings
+  label: 'Bootstrap Barrio settings'

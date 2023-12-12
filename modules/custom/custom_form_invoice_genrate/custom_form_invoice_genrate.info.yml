@@ -1,0 +1,5 @@
+name: 'Custom Form Invoice genration'
+type: module
+description: 'Creates a custom form with group fields.'
+core_version_requirement: ^8 || ^9
+package: Custom
