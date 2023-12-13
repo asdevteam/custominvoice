@@ -24,18 +24,21 @@ use Drupal\user\Entity\User;
 
 
 
-class CustomForminvoice extends FormBase {
+class CustomForminvoice extends FormBase
+{
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId()
+  {
     return 'custom_form_invoice_genrate';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state)
+  {
     // Load all authenticated users.
     $users = User::loadMultiple();
     $authenticated_users = [];
@@ -59,29 +62,29 @@ class CustomForminvoice extends FormBase {
       '#title' => $this->t(''),
       '#tree' => TRUE,
     ];
-  
+
     $form['items']['item_list'] = [
       '#type' => 'container',
       '#attributes' => ['id' => 'item-list-wrapper'],
     ];
-  
+
     // Check if there are already items in the form state
     $num_items = $form_state->get('num_items') ?: 1;
-  
+
     for ($i = 0; $i < $num_items; $i++) {
       $form['items']['item_list'][$i]['item_label'] = [
         '#type' => 'textfield',
         '#title' => $this->t('URL'),
         '#required' => TRUE,
       ];
-  
+
       $form['items']['item_list'][$i]['item_price'] = [
         '#type' => 'textfield',
         '#title' => $this->t('Price'),
         '#required' => TRUE,
       ];
     }
-  
+
     $form['items']['add_more'] = [
       '#type' => 'submit',
       '#value' => $this->t('Add More'),
@@ -91,29 +94,32 @@ class CustomForminvoice extends FormBase {
         'wrapper' => 'item-list-wrapper',
       ],
     ];
-  
+
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Genrate Invoice'),
     ];
-  
+
     return $form;
   }
-  
-  public function addMoreSubmit(array &$form, FormStateInterface $form_state) {
+
+  public function addMoreSubmit(array &$form, FormStateInterface $form_state)
+  {
     $num_items = $form_state->get('num_items') ?: 1;
     $form_state->set('num_items', $num_items + 1);
     $form_state->setRebuild(TRUE);
   }
-  
-  public function addMoreCallback(array &$form, FormStateInterface $form_state) {
+
+  public function addMoreCallback(array &$form, FormStateInterface $form_state)
+  {
     return $form['items']['item_list'];
   }
-  
+
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state)
+  {
     // Validate price fields to allow only numeric values.
     $items = $form_state->getValue('items')['item_list'];
     foreach ($items as $item) {
@@ -126,51 +132,52 @@ class CustomForminvoice extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state)
+  {
     // Extract submitted values.
     $selected_user_id = $form_state->getValue('selected_user');
     $selected_user = User::load($selected_user_id);
     $selected_uid = $selected_user->id();
     $items = $form_state->getValue('items')['item_list'];
-  
+
     $cartProvider = \Drupal::service('commerce_cart.cart_provider');
     $orderStorage = \Drupal::entityTypeManager()->getStorage('commerce_order');
     $billingProfileStorage = \Drupal::entityTypeManager()->getStorage('profile');
-  
+
     // Get the commerce_invoice.invoice_generator service.
     $invoiceGenerator = \Drupal::service('commerce_invoice.invoice_generator');
-  
+
     // Get or create the cart.
     $cart = $cartProvider->getCart('default');
     if (!$cart) {
       $cart = $cartProvider->createCart('default');
     }
-  
+
     // Check if the cart is not empty.
     if ($cart && count($cart->getItems()) > 0) {
       // Remove all items from the cart.
       $orderItemStorage = \Drupal::entityTypeManager()->getStorage('commerce_order_item');
       $orderItemStorage->delete($cart->getItems());
     }
-  
+
     foreach ($items as $item) {
       // Create a Price object.
       $unit_price = new Price($item['item_price'], 'USD');
-  
+
       $orderItem = OrderItem::create([
         'type' => 'invoice_payment', // Replace with your order item type, if applicable.
       ]);
       $orderItem->setTitle($item['item_label']);
       $orderItem->setUnitPrice($unit_price);
       $orderItem->save();
-  
+
       // Add the order item to the cart.
       $cart->addItem($orderItem);
     }
-  
+
     // Save the cart.
     $cart->save();
-  
+
     // Create an order from the cart.
     $order_type_id = 'custom_invoice'; // Replace with your order type ID.
     $order_type = OrderType::load($order_type_id);
@@ -187,7 +194,7 @@ class CustomForminvoice extends FormBase {
 
     // Get the store from the order.
     $store = $order->getStore();
-  
+
     // Create a billing profile (you may need to adjust this based on your setup).
     $billing_profile = $billingProfileStorage->create([
       'type' => 'customer_profile',
@@ -197,20 +204,17 @@ class CustomForminvoice extends FormBase {
       // ...
     ]);
     $billing_profile->save();
-    
+
     // Generate an invoice for the order.
-    $invoiceGenerator->generate([$order], $store);
-    
-    // Redirect to the payment page.
-    // $form_state->setRedirect('commerce_checkout.form', ['commerce_order' => $order->id()]);
-  
-    // // Optionally, redirect to the cart, another page, or the invoice page.
-    // $form_state->setRedirect('commerce_cart.page');
-     // Set a status message after successful submission.
-      // Set a status message after successful submission.
-    $this->messenger()->addMessage($this->t('Invoice generated successfully for user @username.', [
+    $invoice = $invoiceGenerator->generate([$order], $store);
+    $invoice_url = Url::fromUri('base:admin/commerce/invoices/' . $invoice->id());
+
+    // Convert the Url object to a string.
+    $invoice_url_string = $invoice_url->toString();
+
+    $this->messenger()->addMessage($this->t('Invoice generated successfully for user @username. View User <a href="@invoice_url">Invoice</a>', [
       '@username' => $selected_user->getAccountName(),
+      '@invoice_url' => $invoice_url_string
     ]));
   }
-  
 }
